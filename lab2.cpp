@@ -9,6 +9,13 @@
 
 #define MATRIX_ROW_LENGTH 8
 
+void print_final_matrix(int *matrix, int k);
+void init_matrix(int *matrix, int matrixSize, int starting_value);
+int get_offset(int k, int i, int j);
+void first_operation(int *matrix, int k);
+void second_operation(int *matrix, int k);
+
+
 int main(int argc, char** argv) {
 	const int K = atoi(argv[3]); // will have to be defined as an argument
 	const int MATRIX_SIZE = MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH * (K+1);
