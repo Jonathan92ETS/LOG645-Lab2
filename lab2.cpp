@@ -4,15 +4,19 @@
 #include <ctime>
 #include <sys/time.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <omp.h>
 
 
-#define MATRIX_ROW_LENGTH 8
+#define MATRIX_ROW_LENGTH 10
 
 void print_final_matrix(int *matrix, int k);
 void init_matrix(int *matrix, int matrixSize, int starting_value);
 int get_offset(int k, int i, int j);
-void first_operation(int *matrix, int k);
-void second_operation(int *matrix, int k);
+void first_operation_seq(int *matrix, int k);
+void first_operation_par(int *matrix, int k);
+void second_operation_seq(int *matrix, int k);
+void second_operation_par(int *matrix, int k);
 
 
 int main(int argc, char** argv) {
@@ -27,7 +31,7 @@ int main(int argc, char** argv) {
 
 	if(atoi(argv[1]) == 1) {
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
-		first_operation(matrix, K);
+		first_operation_par(matrix, K);
 		print_final_matrix(matrix, K);
 	}
 	else {
@@ -47,12 +51,12 @@ int get_offset(int k, int i, int j) {
 	return (k * MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH) + (i * MATRIX_ROW_LENGTH) + j; 
 }
 
-void first_operation(int *matrix, int k) {
+void first_operation_seq(int *matrix, int k) {
 	int current_k, i, j;
 	for (current_k = 1; current_k <= k; current_k++) {
 		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
 			for (j = 0; j < MATRIX_ROW_LENGTH; j++) {
-				usleep(1000);
+				usleep(50000);
 				matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j) * current_k);
 			}
 		}
@@ -60,7 +64,7 @@ void first_operation(int *matrix, int k) {
 }
 
 
-void second_operation(int *matrix, int k) {
+void second_operation_seq(int *matrix, int k) {
 	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j;
 	for (current_k = 1; current_k <= k; current_k++) {
 		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
@@ -69,15 +73,39 @@ void second_operation(int *matrix, int k) {
 				current_offset = get_offset(current_k, i, j);
 
 				if (j == 0) {
-					usleep(1000);
+					usleep(50000);
 					matrix[current_offset] = value_at_previous_k + (i * current_k);
 				} else {
-					usleep(1000);
+					usleep(50000);
 					value_at_previous_j = matrix[get_offset(current_k, i, j - 1)];
 					matrix[current_offset] = value_at_previous_k + (value_at_previous_j * current_k);
 				}
 			}
 		}
+	}
+}
+
+void first_operation_par(int *matrix, int k) {
+	int rang, nprocs;
+	#pragma omp parallel private(rang, nprocs) {
+		rang = omp_get_thread_num();
+		nprocs = omp_get_num_threads();
+		printf(“Bonjour, je suis %d (parmi %d threads)\n”, rang, nprocs);
+		//usleep(50000);
+		//matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j) * current_k);
+		
+	}
+}
+
+void second_operation_par(int *matrix, int k) {
+	int rang, nprocs;
+	#pragma omp parallel private(rang, nprocs) {
+		rang = omp_get_thread_num();
+		nprocs = omp_get_num_threads();
+		printf(“Bonjour, je suis %d (parmi %d threads)\n”, rang, nprocs);
+		//usleep(50000);
+		//matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j) * current_k);
+		
 	}
 }
 
