@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <ctime>
-#include "lab1.h"
 #include <sys/time.h>
 #include <unistd.h>
 

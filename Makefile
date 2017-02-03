@@ -1,6 +1,8 @@
 all:
-g++ -std=c99 -fopenmp -olab2 lab2.cpp
+	g++ -std=c99 -fopenmp -olab2 lab2.cpp
+
 run:
-./lab2
+	./lab2
+
 clean:
-rm lab2
+	rm lab2
