@@ -35,8 +35,16 @@ int main(int argc, char** argv) {
 		//first_operation_par(matrix, K);
 		first_operation_seq(matrix, K);
 		print_final_matrix(matrix, K);
+
+		init_matrix(matrix, MATRIX_SIZE, starting_value);
+		first_operation_par(matrix, K);
+		print_final_matrix(matrix, K);
 	}
 	else {
+		init_matrix(matrix, MATRIX_SIZE, starting_value);
+		second_operation_seq(matrix, K);
+		print_final_matrix(matrix, K);
+
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		second_operation_seq(matrix, K);
 		print_final_matrix(matrix, K);
@@ -103,7 +111,7 @@ void first_operation_par(int *matrix, int k) {
 			
 		}
 		
-	}*/
+	}
 }
 
 
@@ -122,7 +130,7 @@ void second_operation_par(int *matrix, int k) {
 			matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j) * current_k);
 			
 		}
-}
+
 	}
 }
 
