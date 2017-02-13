@@ -18,6 +18,8 @@ void first_operation_seq(int *matrix, int k);
 void first_operation_par(int *matrix, int k);
 void second_operation_seq(int *matrix, int k);
 void second_operation_par(int *matrix, int k);
+void start_timer(double *timeStart);
+void stop_timer(double *timeStart);
 
 
 int main(int argc, char** argv) {
@@ -25,20 +27,20 @@ int main(int argc, char** argv) {
 	const int MATRIX_SIZE = MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH * (K+1);
 	int starting_value = atoi(argv[2]); // will have to be defined as an argument
 	int matrix[MATRIX_SIZE];
-	double timeStart, timeEnd, Texec;
-	struct timeval tp;
-	gettimeofday (&tp, NULL); // Debut du chronometre
-	timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
+	double timeStart;
 
 	if(atoi(argv[1]) == 1) {
+		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
-		//first_operation_par(matrix, K);
 		first_operation_seq(matrix, K);
 		print_final_matrix(matrix, K);
+		stop_timer(&timeStart);
 
+		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		first_operation_par(matrix, K);
 		print_final_matrix(matrix, K);
+		stop_timer(&timeStart);
 	}
 	else {
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
@@ -50,10 +52,22 @@ int main(int argc, char** argv) {
 		print_final_matrix(matrix, K);
 	}
 
+
+}
+
+void start_timer(double *timeStart) {
+	struct timeval tp;
+	gettimeofday (&tp, NULL); // Debut du chronometre
+	*timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
+}
+
+void stop_timer(double *timeStart) {
+	struct timeval tp;
+	double timeEnd, Texec;
 	gettimeofday (&tp, NULL); // Fin du chronometre
 	timeEnd = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
-	Texec = timeEnd - timeStart; //Temps d'execution en secondes
-	printf("Temps d execution: %lf\n", Texec);
+	Texec = timeEnd - *timeStart; //Temps d'execution en secondes
+	printf("Temps d execution: %lf\n\n", Texec);
 
 }
 
@@ -99,16 +113,15 @@ void first_operation_par(int *matrix, int k) {
 	int current_k, i, j, rang, nprocs;
 	#pragma omp parallel private(current_k,i,j, rang, nprocs)
 	{
-
-		#pragma omp for collapse(3)
-		for (current_k = 1; current_k <= k; current_k++) {
-			for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
-				for (j = 0; j < MATRIX_ROW_LENGTH; j++) {
+		#pragma omp for
+		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
+			for (j = 0; j < MATRIX_ROW_LENGTH; j++) {	
+				for (current_k = 1; current_k <= k; current_k++) {
 					rang = omp_get_thread_num();
 					nprocs = omp_get_num_threads();
-					printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
+					//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
 					usleep(SLEEP_TIME);
-					matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j) * current_k);
+					matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j));
 				}
 			}
 		}
