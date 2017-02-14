@@ -119,7 +119,7 @@ void second_operation_seq(int *matrix, int k) {
 			for (j = MATRIX_ROW_LENGTH - 1; j >= 0; j--) {
 				current_offset = get_offset(current_k, i, j);
 				value_at_previous_k = matrix[get_offset(current_k - 1, i, j)];
-				value_at_previous_j = matrix[get_offset(current_k, i, j)];
+				value_at_previous_j = matrix[get_offset(current_k, i, j + 1)];
 
 				usleep(SLEEP_TIME);
 				if (j == (MATRIX_ROW_LENGTH - 1)) {
@@ -139,19 +139,22 @@ void second_operation_par(int *matrix, int k) {
 	{
 		#pragma omp for
 		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
-			for (current_k = 1; current_k <= k; current_k++) {
-				for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
+			// ce que j'comprends pas c'est qu'on soit quand même obligé de faire j-- au lieu de j++ même après une torsion
+			for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
+				for (current_k = 1; current_k <= k; current_k++) {
+				
 					current_offset = get_offset(current_k, i, j-i);
 
 					rang = omp_get_thread_num();
 					nprocs = omp_get_num_threads();					
 					// printf("Bonjour, je suis %d (parmi %d threads) pour valuer i = %d\n", rang, nprocs, i);
-					
+					// printf("i %d j %d\n", i, j);
+
 					usleep(SLEEP_TIME);
 					if (j-i == (MATRIX_ROW_LENGTH - 1)) {
-						matrix[current_offset] = matrix[get_offset(k-1, i, j-i)] + i;
+						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + i;
 					} else {
-						matrix[current_offset] = matrix[get_offset(k-1, i, j-i)] + matrix[get_offset(k, i, j+1-i)];
+						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + matrix[get_offset(current_k, i, j+1-i)];
 					}
 					
 				}
