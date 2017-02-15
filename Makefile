@@ -1,5 +1,5 @@
 all:
-	g++ -std=c99 -fopenmp -olab2 lab2.cpp
+	g++ -fopenmp -olab2 lab2.cpp
 
 run:
 	./lab2

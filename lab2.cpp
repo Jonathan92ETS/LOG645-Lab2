@@ -19,7 +19,7 @@ void first_operation_par(int *matrix, int k);
 void second_operation_seq(int *matrix, int k);
 void second_operation_par(int *matrix, int k);
 void start_timer(double *timeStart);
-void stop_timer(double *timeStart);
+double stop_timer(double *timeStart);
 
 
 int main(int argc, char** argv) {
@@ -28,32 +28,39 @@ int main(int argc, char** argv) {
 	int starting_value = atoi(argv[2]); // will have to be defined as an argument
 	int matrix[MATRIX_SIZE];
 	double timeStart;
+	double tSeq, tPar, acc;
 
 	if(atoi(argv[1]) == 1) {
 		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		first_operation_seq(matrix, K);
 		print_final_matrix(matrix, K);
-		stop_timer(&timeStart);
+		tSeq = stop_timer(&timeStart);
 
 		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		first_operation_par(matrix, K);
 		print_final_matrix(matrix, K);
-		stop_timer(&timeStart);
+		tPar = stop_timer(&timeStart);
+
+		acc = tSeq/tPar;
+		printf("Acceleration: %lf\n\n", acc );
 	}
 	else {
 		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		second_operation_seq(matrix, K);
 		print_final_matrix(matrix, K);
-		stop_timer(&timeStart);
+		tSeq = stop_timer(&timeStart);
 
 		start_timer(&timeStart);
 		init_matrix(matrix, MATRIX_SIZE, starting_value);
 		second_operation_par(matrix, K);
 		print_final_matrix(matrix, K);
-		stop_timer(&timeStart);
+		tPar = stop_timer(&timeStart);
+
+		acc = tSeq/tPar;
+		printf("Acceleration: %lf\n\n", acc );
 	}
 
 
@@ -65,13 +72,14 @@ void start_timer(double *timeStart) {
 	*timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
 }
 
-void stop_timer(double *timeStart) {
+double stop_timer(double *timeStart) {
 	struct timeval tp;
 	double timeEnd, Texec;
 	gettimeofday (&tp, NULL); // Fin du chronometre
 	timeEnd = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
 	Texec = timeEnd - *timeStart; //Temps d'execution en secondes
 	printf("Temps d execution: %lf\n\n", Texec);
+	return Texec;
 
 }
 
