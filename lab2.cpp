@@ -101,19 +101,19 @@ void first_operation_seq(int *matrix, int k) {
 
 
 void first_operation_par(int *matrix, int k) {
-	int current_k, i, j, rang, nprocs;
-	#pragma omp parallel private(current_k,i,j, rang, nprocs)
+	int current_k, index, i, j, rang, nprocs;
+	#pragma omp parallel private(current_k,index,i,j, rang, nprocs)
 	{
 		#pragma omp for
-		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
-			for (j = 0; j < MATRIX_ROW_LENGTH; j++) {	
-				for (current_k = 1; current_k <= k; current_k++) {
-					rang = omp_get_thread_num();
-					nprocs = omp_get_num_threads();
-					//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
-					usleep(SLEEP_TIME);
-					matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j));
-				}
+		for (index = 0; index < (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH); index++) {
+			i = index / MATRIX_ROW_LENGTH;
+			j = index % MATRIX_ROW_LENGTH;
+			for (current_k = 1; current_k <= k; current_k++) {
+				rang = omp_get_thread_num();
+				nprocs = omp_get_num_threads();
+				//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
+				usleep(SLEEP_TIME);
+				matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j));
 			}
 		}
 	}
