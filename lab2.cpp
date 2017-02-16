@@ -104,16 +104,18 @@ void first_operation_par(int *matrix, int k) {
 	int current_k, index, i, j, rang, nprocs;
 	#pragma omp parallel private(current_k,index,i,j, rang, nprocs)
 	{
-		#pragma omp for
-		for (index = 0; index < (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH); index++) {
-			i = index / MATRIX_ROW_LENGTH;
-			j = index % MATRIX_ROW_LENGTH;
-			for (current_k = 1; current_k <= k; current_k++) {
-				rang = omp_get_thread_num();
-				nprocs = omp_get_num_threads();
-				//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
-				usleep(SLEEP_TIME);
-				matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j));
+		for (current_k = 1; current_k <= k; current_k++) {
+			#pragma omp for
+			for (index = 0; index < (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH); index++) {
+				i = index / MATRIX_ROW_LENGTH;
+				j = index % MATRIX_ROW_LENGTH;
+				
+					rang = omp_get_thread_num();
+					nprocs = omp_get_num_threads();
+					//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
+					usleep(SLEEP_TIME);
+					matrix[get_offset(current_k, i, j)] = matrix[get_offset(current_k - 1, i, j)] + ((i + j));
+				
 			}
 		}
 	}
@@ -121,19 +123,19 @@ void first_operation_par(int *matrix, int k) {
 
 
 void second_operation_seq(int *matrix, int k) {
-	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j;
+	int current_k, current_offset, value_at_previous_k, value_at_next_j, i, j;
 	for (current_k = 1; current_k <= k; current_k++) {
 		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
 			for (j = MATRIX_ROW_LENGTH - 1; j >= 0; j--) {
 				current_offset = get_offset(current_k, i, j);
 				value_at_previous_k = matrix[get_offset(current_k - 1, i, j)];
-				value_at_previous_j = matrix[get_offset(current_k, i, j + 1)];
+				value_at_next_j = matrix[get_offset(current_k, i, j + 1)];
 
 				usleep(SLEEP_TIME);
 				if (j == (MATRIX_ROW_LENGTH - 1)) {
 					matrix[current_offset] = value_at_previous_k + i;
 				} else {
-					matrix[current_offset] = value_at_previous_k + value_at_previous_j;
+					matrix[current_offset] = value_at_previous_k + value_at_next_j;
 				}
 				
 			}
@@ -145,12 +147,13 @@ void second_operation_par(int *matrix, int k) {
 	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j, nprocs, rang;
 	#pragma omp parallel private(current_k, i, j, rang, nprocs, current_offset, value_at_previous_k, value_at_previous_j)
 	{
-		#pragma omp for
-		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
-			// ce que j'comprends pas c'est qu'on soit quand même obligé de faire j-- au lieu de j++ même après une torsion
-			for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
-				for (current_k = 1; current_k <= k; current_k++) {
-				
+		for (current_k = 1; current_k <= k; current_k++) {
+			#pragma omp for
+			for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
+				// ce que j'comprends pas c'est qu'on soit quand même obligé de faire j-- au lieu de j++ même après une torsion
+				for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
+					
+					
 					current_offset = get_offset(current_k, i, j-i);
 
 					rang = omp_get_thread_num();
@@ -164,6 +167,7 @@ void second_operation_par(int *matrix, int k) {
 					} else {
 						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + matrix[get_offset(current_k, i, j+1-i)];
 					}
+						
 					
 				}
 			}
