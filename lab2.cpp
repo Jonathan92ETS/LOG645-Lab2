@@ -142,34 +142,63 @@ void second_operation_seq(int *matrix, int k) {
 }
 
 void second_operation_par(int *matrix, int k) {
-	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j, nprocs, rang;
-	#pragma omp parallel private(current_k, i, j, rang, nprocs, current_offset, value_at_previous_k, value_at_previous_j)
+	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j, nprocs, rang, index;
+	#pragma omp parallel private(current_k, i, j, rang, nprocs, current_offset, value_at_previous_k, value_at_previous_j, index)
 	{
-		#pragma omp for
-		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
-			// ce que j'comprends pas c'est qu'on soit quand même obligé de faire j-- au lieu de j++ même après une torsion
+		#pragma omp for schedule(dynamic)
+		for (index = 0; index < k * (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH); index++) {
+
+			current_k = index / (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH) + 1;
+			i = (index % (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH)) / MATRIX_ROW_LENGTH;
+
 			for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
-				for (current_k = 1; current_k <= k; current_k++) {
-				
-					current_offset = get_offset(current_k, i, j-i);
+			
+			
+				current_offset = get_offset(current_k, i, j-i);
 
-					rang = omp_get_thread_num();
-					nprocs = omp_get_num_threads();					
-					// printf("Bonjour, je suis %d (parmi %d threads) pour valuer i = %d\n", rang, nprocs, i);
-					// printf("i %d j %d\n", i, j);
+				rang = omp_get_thread_num();
+				nprocs = omp_get_num_threads();					
+				//printf("Bonjour, je suis %d (parmi %d threads)\n", rang, nprocs);
 
-					usleep(SLEEP_TIME);
-					if (j-i == (MATRIX_ROW_LENGTH - 1)) {
-						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + i;
-					} else {
-						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + matrix[get_offset(current_k, i, j+1-i)];
-					}
-					
-				}
+				usleep(SLEEP_TIME);
+				if (j-i == (MATRIX_ROW_LENGTH - 1)) {
+					matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + i;
+				} else {
+					matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + matrix[get_offset(current_k, i, j+1-i)];
+				}				
 			}
 		}
 	}
 }
+
+// void second_operation_par(int *matrix, int k) {
+// 	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j, nprocs, rang;
+// 	#pragma omp parallel private(current_k, i, j, rang, nprocs, current_offset, value_at_previous_k, value_at_previous_j)
+// 	{
+// 		#pragma omp for
+// 		for (i = 0; i < MATRIX_ROW_LENGTH; i++) {
+// 			for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
+// 				for (current_k = 1; current_k <= k; current_k++) {
+				
+// 					current_offset = get_offset(current_k, i, j-i);
+
+// 					rang = omp_get_thread_num();
+// 					nprocs = omp_get_num_threads();					
+// 					printf("Bonjour, je suis %d (parmi %d threads) pour valuer i = %d\n", rang, nprocs, i);
+// 					// printf("i %d j %d\n", i, j);
+
+// 					usleep(SLEEP_TIME);
+// 					if (j-i == (MATRIX_ROW_LENGTH - 1)) {
+// 						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + i;
+// 					} else {
+// 						matrix[current_offset] = matrix[get_offset(current_k-1, i, j-i)] + matrix[get_offset(current_k, i, j+1-i)];
+// 					}
+					
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 void init_matrix(int *matrix, int matrixSize, int startingValue) {
 	int i;
