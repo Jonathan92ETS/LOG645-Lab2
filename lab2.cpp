@@ -9,7 +9,7 @@
 
 
 #define MATRIX_ROW_LENGTH 10
-#define SLEEP_TIME 5000
+#define SLEEP_TIME 50000
 
 void print_final_matrix(int *matrix, int k);
 void init_matrix(int *matrix, int matrixSize, int starting_value);
