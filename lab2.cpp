@@ -145,11 +145,14 @@ void second_operation_par(int *matrix, int k) {
 	int current_k, current_offset, value_at_previous_k, value_at_previous_j, i, j, nprocs, rang, index;
 	#pragma omp parallel private(current_k, i, j, rang, nprocs, current_offset, value_at_previous_k, value_at_previous_j, index)
 	{
-		#pragma omp for schedule(dynamic)
-		for (index = 0; index < k * (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH); index++) {
+		#pragma omp for
+		for (index = 0; index < k * (MATRIX_ROW_LENGTH); index++) {
 
-			current_k = index / (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH) + 1;
-			i = (index % (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH)) / MATRIX_ROW_LENGTH;
+			// current_k = index / (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH) + 1;
+			// i = (index % (MATRIX_ROW_LENGTH * MATRIX_ROW_LENGTH)) / MATRIX_ROW_LENGTH;
+			
+			i = index % MATRIX_ROW_LENGTH;
+			current_k = (index/MATRIX_ROW_LENGTH) + 1;
 
 			for (j = MATRIX_ROW_LENGTH - 1 + i; j >= 0 + i; j--) {
 			
